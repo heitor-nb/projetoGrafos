@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 
-var endereco = "config.txt";
+var endereco = "C:/Users/heito/source/repos/ProjetoGrafosTeste/projetoGrafos/config.txt";
 var fileReader = new FileReader(endereco);
 var lista = fileReader.GetLinhas(); // pega apenas as linhas de configuração
 foreach (var item in lista) Console.WriteLine(item);
@@ -35,18 +35,22 @@ try
 
     grafo.ExibirVizinhos();
 
-    ConcurrentDictionary<int, bool> visitados = new();
+    //grafo.ExibirCaminhosMinimos();
 
-    visitados.TryAdd(0, true);
+    grafo.FloydWarshall();
 
-    Task dfsTask1 = Task.Run(() => grafo.DFS('a', 0, visitados));
-    Task dfsTask2 = Task.Run(() =>
-    {
-        Thread.Sleep(100); // representa que o caminhão dois saiu em segundo lugar
-        grafo.DFS('b', 0, visitados);
-    });
+    //ConcurrentDictionary<int, bool> visitados = new();
 
-    await Task.WhenAll(dfsTask1, dfsTask2);
+    //visitados.TryAdd(0, true);
+
+    //Task dfsTask1 = Task.Run(() => grafo.DFS('a', 0, visitados));
+    //Task dfsTask2 = Task.Run(() =>
+    //{
+    //    Thread.Sleep(100); // representa que o caminhão dois saiu em segundo lugar
+    //    grafo.DFS('b', 0, visitados);
+    //});
+
+    //await Task.WhenAll(dfsTask1, dfsTask2);
 }
 catch (Exception ex)
 {

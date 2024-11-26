@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace ProjetoGrafos
     {
         private readonly int maxSize;
         private int nodeCount;
-        private int lixoPorLata = 5; // m^3 de lixo por lata **
+        private readonly int lixoPorLata = 5; // m^3 de lixo por lata **
         public Node[] Vetor { get; set; }
         public int[,] W { get; set; }
 
@@ -26,7 +27,7 @@ namespace ProjetoGrafos
             {
                 for(int j = 0; j < n; j++)
                 {
-                    W[i, j] = 8;
+                    W[i, j] = -1;
                 }
             }
         }
@@ -72,7 +73,7 @@ namespace ProjetoGrafos
             {
                 for(int  j = 0; j < maxSize; j++)
                 {
-                    if(W[i, j] == 8) Console.Write("-   ");
+                    if(W[i, j] == -1) Console.Write("-   ");
                     else Console.Write($"{W[i, j]}   ");
                 }
                 Console.WriteLine();
@@ -174,5 +175,93 @@ namespace ProjetoGrafos
         }
 
         // prox passo retornar ao aterro quando finalizar
+
+        public List<Node>[,] FloydWarshall()
+        {
+            var dist = new int[maxSize, maxSize];
+            var prev = new Node?[maxSize, maxSize];
+
+            for (int i = 0; i < maxSize; i++)
+            {
+                for (int j = 0; j < maxSize; j++)
+                {
+                    if (W[i, j] != -1)
+                    {
+                        dist[i, j] = W[i, j];
+                        prev[i, j] = Vetor[i];
+                    }
+                    else
+                    {
+                        dist[i, j] = 1024;
+                        prev[i, j] = null;
+                    }
+                }
+            }
+
+            for (int k = 0; k < maxSize; k++)
+            {
+                for (int i = 0; i < maxSize; i++)
+                {
+                    for (int j = 0; j < maxSize; j++)
+                    {
+                        if (dist[i, j] > dist[i, k] + dist[k, j])
+                        {
+                            dist[i, j] = dist[i, k] + dist[k, j];
+                            prev[i, j] = prev[k, j];
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < maxSize; i++)
+            {
+                for (int j = 0; j < maxSize; j++)
+                {
+                    Console.WriteLine($"{i} -> {j}: {dist[i, j]}");
+                }
+            }
+
+            // monta matriz de caminhos:
+            var paths = new List<Node>[maxSize, maxSize];
+            for(int u = 0; u < maxSize; u++)
+            {
+                for(int v = 0; v < maxSize; v++)
+                {
+                    paths[u, v] = Path(prev, u, v);
+                }
+            }
+            return paths;
+        }
+
+        private List<Node> Path(Node?[,] prev, int u, int v)
+        {
+            var path = new List<Node>();
+            if (prev[u, v] == null) return path;
+            else
+            {
+                var aux = Vetor[v];
+                path.Add(aux);
+                while (Vetor[u] != aux)
+                {
+                    aux = prev[u, v];
+                    if(aux != null) path.Add(aux);
+                }
+                return path;
+            }
+        }
+
+        //public void ExibirCaminhosMinimos()
+        //{
+        //    var paths = FloydWarshall();
+        //    for (int i = 0; i < maxSize; i++)
+        //    {
+        //        for (int j = 0; j < maxSize; j++)
+        //        {
+        //            Console.Write($"{i} -> {j}: ");
+        //            foreach (var node in paths[i, j]) Console.Write($"{node.Index} ");
+        //            Console.WriteLine();
+        //        }
+        //    }
+        //}
     }
 }
